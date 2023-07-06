@@ -10,11 +10,13 @@ app = Flask(__name__)
 CORS(app)
 migrate = Migrate()
 
-load_dotenv() # load .env values
-env_vars = dotenv_values() # assign .env values to dict var
+load_dotenv()  # load .env values
+env_vars = dotenv_values()  # assign .env values to dict var
 
 # configure app with .env values
-app.config['SECRET_KEY'] = env_vars['secret_key']
-app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{env_vars['DB_USER']}:{env_vars['DB_PASS']}@localhost/{env_vars['DB_NAME']}"
+app.config["SECRET_KEY"] = env_vars["secret_key"]
+app.config[
+    "SQLALCHEMY_DATABASE_URI"
+] = f"postgresql://{env_vars['DB_USER']}:{env_vars['DB_PASS']}@localhost/{env_vars['DB_NAME']}"
 db.init_app(app)
 migrate.init_app(app, db)
