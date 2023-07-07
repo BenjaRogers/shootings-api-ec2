@@ -11,8 +11,8 @@ CORS(app)
 migrate = Migrate()
 
 load_dotenv()  # load .env values
-env_vars = dotenv_values()  # assign .env values to dict var
-
+env_vars = dotenv_values("API/.env.production")  # assign .env values to dict var
+      
 # configure app with .env values
 app.config["SECRET_KEY"] = env_vars["secret_key"]
 app.config[
