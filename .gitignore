@@ -3,4 +3,4 @@
 *.idea
 *.pyc
 *__pycache__
-
+*.env.production
