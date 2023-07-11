@@ -95,7 +95,7 @@ def get_person(current_user, id):
     person_data["latitude"] = person.latitude
     person_data["is_geocoding_exact"] = person.is_geocoding_exact
 
-    return jsonify({"users": person_data})
+    return jsonify({"people": person_data})
 
 
 # parameterized query
