@@ -119,8 +119,10 @@ def get_person_parameterized(current_user):
     people = Person.query.filter()
     if age:
         people = people.filter(Person.age == age)
-    if armed:
+    if armed == "unarmed":
         people = people.filter(Person.armed == armed)
+    if armed == "armed":
+        people = people.filter(Person.armed != "unarmed")
     if body_camera:
         people = people.filter(Person.body_camera == bool(body_camera))
     if city:
