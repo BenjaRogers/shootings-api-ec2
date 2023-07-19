@@ -6,6 +6,7 @@ import jwt
 from functools import wraps
 from API.app import app, db
 from DB.models import Users, Person
+from sqlalchemy import Date, cast
 
 
 # Create token required decorator
@@ -106,7 +107,8 @@ def get_person_parameterized(current_user):
     armed = request.args.get("armed")
     body_camera = request.args.get("body_camera")
     city = request.args.get("city")
-    # date = request.args.get('date)
+    leading_date = request.args.get("ldate")
+    trailing_date = request.args.get("tdate")
     flee = request.args.get("flee")
     gender = request.args.get("gender")
     is_geocoding_exact = request.args.get("is_geocoding_exact")
@@ -127,8 +129,11 @@ def get_person_parameterized(current_user):
         people = people.filter(Person.body_camera == bool(body_camera))
     if city:
         people = people.filter(Person.city == city)
+    if leading_date and trailing_date:
+        people = people.filter(cast(Person.date, Date).between(datetime.date(int(leading_date), 1, 1), datetime.date(int(trailing_date), 12, 31)))
+        print(Person.date)
     if flee:
-        if flee == "Not fleeing":
+        if flee == 'Not fleeing':
             people = people.filter(Person.flee == flee)
         else:
             people = people.filter(Person.flee != "Not fleeing")
