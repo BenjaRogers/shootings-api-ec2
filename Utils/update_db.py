@@ -4,11 +4,11 @@ from dotenv import load_dotenv, dotenv_values
 import pandas as pd
 
 load_dotenv()
-env_vars = dotenv_values()
+env_vars = dotenv_values("Utils/.env.production")
 username = env_vars["username"]
 password = env_vars["password"]
 
-base_url = "http://localhost:5000/"
+base_url = "http://localhost/"
 
 
 def get_token() -> dict:

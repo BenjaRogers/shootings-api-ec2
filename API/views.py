@@ -96,7 +96,7 @@ def get_person(current_user, id):
     person_data["latitude"] = person.latitude
     person_data["is_geocoding_exact"] = person.is_geocoding_exact
 
-    return jsonify({"users": person_data})
+    return jsonify({"people": person_data})
 
 
 # parameterized query
@@ -121,11 +121,10 @@ def get_person_parameterized(current_user):
     people = Person.query.filter()
     if age:
         people = people.filter(Person.age == age)
-    if armed:
-        if armed == 'unarmed':
-            people = people.filter(Person.armed == armed)
-        elif armed == 'armed':
-            people = people.filter(Person.armed != 'unarmed')
+    if armed == "unarmed":
+        people = people.filter(Person.armed == armed)
+    if armed == "armed":
+        people = people.filter(Person.armed != "unarmed")
     if body_camera:
         people = people.filter(Person.body_camera == bool(body_camera))
     if city:
