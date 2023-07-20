@@ -5,7 +5,7 @@ import datetime
 import jwt
 from functools import wraps
 from API.app import app, db
-from DB.models import Users, Person
+from DB.models import Users, Person, Agency
 from sqlalchemy import Date, cast
 
 
@@ -68,7 +68,7 @@ def get_all_people(current_user):
         person_data["agency_ids"] = person.agency_ids
 
         output.append(person_data)
-    return jsonify({"people": output})  #
+    return jsonify({"people": output})
 
 
 # Return person based on public ID
@@ -196,6 +196,8 @@ def get_person_parameterized(current_user):
 @app.route("/person/<id>", methods=["PUT"])
 @token_required
 def update_person(current_user, id):
+    if not current_user.admin:
+        return jsonify({"message": "Cannot perform that function."})
     person = Person.query.filter_by(id=id).first()
     if not person:
         return jsonify({"message": "person not found"})
@@ -287,17 +289,128 @@ def delete_person(current_user, id):
 
     person = Person.query.filter_by(id=id).first()
     if not person:
-        return jsonify({"message": "No user found"})
+        return jsonify({"message": "No person found"})
     db.session.delete(person)
     db.session.commit()
-    return jsonify({"message": "No person found with this id"})
+    return jsonify({"message": "Person removed"})
+
+
+#############################################################################################
+# Agency Views
+#############################################################################################
+# Return all agencies in database
+@app.route("/agency", methods=["GET"])
+@token_required
+def get_all_agencies(current_user):
+    agencies = Agency.query.all()
+    output = list()
+
+    for agency in agencies:
+        agency_data = dict()
+
+        agency_data["db_id"] = agency.db_id
+        agency_data["id"] = agency.id
+        agency_data["name"] = agency.name
+        agency_data["type"] = agency.type
+        agency_data["state"] = agency.state
+        agency_data["oricodes"] = agency.oricodes
+        agency_data["total_shootings"] = agency.total_shootings
+
+        output.append(agency_data)
+    return jsonify({"agencies": output})
+
+
+# Return agency based on public ID
+@app.route("/agency/<id>", methods=["GET"])
+@token_required
+def get_agency(current_user, id):
+    agency = Agency.query.filter_by(id=id).first()
+
+    if not agency:
+        return jsonify({"message": "No agency found with this id"})
+
+    agency_data = dict()
+
+    agency_data["db_id"] = agency.db_id
+    agency_data["id"] = agency.id
+    agency_data["name"] = agency.name
+    agency_data["type"] = agency.type
+    agency_data["state"] = agency.state
+    agency_data["oricodes"] = agency.oricodes
+    agency_data["total_shootings"] = agency.total_shootings
+
+    return jsonify({"agencies": agency_data})
+
+
+@app.route("/agency/<id>", methods=["PUT"])
+@token_required
+def update_agency(current_user, id):
+    if not current_user.admin:
+        return jsonify({"message": "Cannot perform that function."})
+
+    agency = Agency.query.filter_by(id=id).first()
+    if not agency:
+        return jsonify({"message": "agency not found"})
+    data = request.get_json()
+    updated_agency = Agency(
+        id=str(data["id"]),
+        name=data["name"],
+        type=data["type"],
+        state=data["state"],
+        oricodes=data["oricodes"],
+        total_shootings=data["total_shootings"]
+    )
+    agency.name = updated_agency.name
+    agency.type = updated_agency.type
+    agency.state = updated_agency.state
+    agency.oricodes = updated_agency.oricodes
+    agency.total_shootings = updated_agency.total_shootings
+
+    db.session.commit()
+    return jsonify({"message": f"Agency record {id} updated."})
+
+
+# Add person to database
+# Admin == True REQUIRED
+@app.route("/agency", methods=["POST"])
+@token_required
+def add_agency(current_user):
+    if not current_user.admin:
+        return jsonify({"message": "Cannot perform that function."})
+
+    data = request.get_json()
+    new_agency = Agency(
+        id=str(data["id"]),
+        name=data["name"],
+        type=data["type"],
+        state=data["state"],
+        oricodes=data["oricodes"],
+        total_shootings=data["total_shootings"]
+    )
+
+    db.session.add(new_agency)
+    db.session.commit()
+
+    return jsonify({"message": "New agency added to database."})
+
+
+@app.route("/agency/<id>", methods=["DELETE"])
+@token_required
+def delete_agency(current_user, id):
+    if not current_user.admin:
+        return jsonify({"message": "Cannot perform that function."})
+
+    agency = Agency.query.filter_by(id=id).first()
+    if not agency:
+        return jsonify({"message": "No agency found"})
+    db.session.delete(agency)
+    db.session.commit()
+    return jsonify({"message": "Agency removed"})
 
 
 #############################################################################################
 # User Views
 #############################################################################################
-
-
 @app.route("/user", methods=["GET"])
 @token_required
 def get_all_users(current_user):
@@ -320,6 +433,9 @@ def get_all_users(current_user):
 @app.route("/user/<public_id>", methods=["GET"])
 @token_required
 def get_one_user(current_user, public_id):
+    if not current_user.admin:
+        return jsonify({"message": "Cannot perform that function."})
+
     user = Users.query.filter_by(public_id=public_id).first()
 
     if not user:
@@ -413,11 +529,3 @@ def login():
     return make_response(
         "Could not verify", 401, {"WWW-Authenticate": 'Basic realm="Login Required"'}
     )
-
-
-#################################################################################################################################################
-# Map STUFF
-################################################################################################################################################
-@app.route("/map")
-def map():
-    return render_template("map.html")
