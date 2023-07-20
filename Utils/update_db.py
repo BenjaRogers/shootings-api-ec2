@@ -4,15 +4,16 @@ from dotenv import load_dotenv, dotenv_values
 import pandas as pd
 
 load_dotenv()
-env_vars = dotenv_values("Utils/.env.production")
+env_vars = dotenv_values("Utils/.env")
 username = env_vars["username"]
 password = env_vars["password"]
 
-base_url = "http://localhost/"
+base_url = "http://localhost:5000/"
 
 
 def get_token() -> dict:
     response = requests.get(base_url + "login", auth=(username, password))
+    print(response)
     return json.loads(response.content)["token"]
 
 
@@ -25,7 +26,7 @@ def get_old_data() -> dict:
 def get_new_data() -> dict:
     github_url = (
         url
-    ) = r"https://raw.githubusercontent.com/washingtonpost/data-police-shootings/master/v1/fatal-police-shootings-data.csv"
+    ) = r"https://raw.githubusercontent.com/washingtonpost/data-police-shootings/master/v2/fatal-police-shootings-data.csv"
     new_data_df = pd.read_csv(github_url)
     new_data = json.loads(new_data_df.to_json(orient="records", index=True))
     return new_data
@@ -82,6 +83,7 @@ def update_database():
         # if id is new -> add to db
         if in_old_data == False:
             print(str(new_person["id"]) + " is not in old data... adding to db")
+            print(json.dumps(new_person))
             response = requests.post(
                 base_url + "/person", data=json.dumps(new_person), headers=headers
             )
