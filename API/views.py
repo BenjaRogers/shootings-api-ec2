@@ -139,11 +139,9 @@ def get_person_parameterized(current_user):
         people = people.filter(Person.city == city)
     if leading_date and trailing_date:
         people = people.filter(cast(Person.date, Date).between(datetime.date(int(leading_date), 1, 1), datetime.date(int(trailing_date), 12, 31)))
-    if flee:
-        if flee == 'Not fleeing':
-            people = people.filter(Person.flee == flee)
-        else:
-            people = people.filter(Person.flee != "Not fleeing")
+    if flee_status:
+        if flee_status == 'Not fleeing':
+            people = people.filter(Person.flee == flee_status)
     if gender:
         people = people.filter(Person.gender == gender)
     if location_precision:
