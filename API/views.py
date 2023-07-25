@@ -339,6 +339,35 @@ def get_agency(current_user, id):
     return jsonify({"agencies": agency_data})
 
 
+# parameterized query
+@app.route("/agency/params", methods=["GET"])
+@token_required
+def get_agency_parameterized(current_user):
+    id_list = request.args.getlist("id")
+
+    agencies = Agency.query.filter()
+
+    if id_list:
+        agencies = agencies.filter(Agency.id.in_(id_list))
+
+    output = list()
+
+    for agency in agencies:
+        agency_data = dict()
+
+        agency_data["db_id"] = agency.db_id
+        agency_data["id"] = agency.id
+        agency_data["name"] = agency.name
+        agency_data["type"] = agency.type
+        agency_data["state"] = agency.state
+        agency_data["oricodes"] = agency.oricodes
+        agency_data["total_shootings"] = agency.total_shootings
+
+        output.append(agency_data)
+
+    return jsonify({"agencies": output})
+
+
 @app.route("/agency/<id>", methods=["PUT"])
 @token_required
 def update_agency(current_user, id):
